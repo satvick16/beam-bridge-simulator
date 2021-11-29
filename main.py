@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from numpy.core.numeric import full
+from numpy.lib.function_base import trapz
 from numpy.matrixlib.defmatrix import bmat
 
 n = 1280  # number of locations to evaluate bridge failure
@@ -31,7 +32,6 @@ bfb = np.full(L, 75)  # Bottom Flange Width
 tfb = np.concatenate((np.full(801, 1.27), np.full(L-801, 2.54+1.27)))
 tfb = np.concatenate((np.full(801, 1.27), np.full(
     1045-801, 3.81), np.full(60, 5.08), np.full(1280-1105, 3.81)))
-
 
 diaphram_width = 1
 # vector indicating whether there is a diaphram here or not
@@ -402,18 +402,16 @@ def get_area_used():
 
 print(get_area_used())
 
-# def deflections(x, BMD, I, E):
-#     curvature = BMD / E / I
 
-#     x_bar_ba = (5 / 8) * 550
-#     d_ba = np.trapz(curvature[15:550]) * x_bar_ba
+def deflections(x, BMD, I, E):
+    curvature = BMD / E / I
 
-#     x_bar_cb = (5 / 8) * (1280-mid)
-#     d_ca = d_ba + np.trapz(curvature[mid:1265]) * x_bar_cb
+    integrand1 = (L - x) * curvature
+    integrand2 = (L/2 - x[:640]) * curvature[:640]
 
-#     delta_mid = ((mid * d_ca) / (2 * mid)) - d_ba
+    delta = (640 * np.trapz(integrand1) / 1280) - np.trapz(integrand2)
 
-#     return delta_mid
+    return delta
 
 
 point_load = 200
@@ -456,5 +454,5 @@ max_point_load, failures = fail_load_2(
 print(max_point_load)
 print(failures)
 
-# d_mid = deflections(x, BMD, I, E)
-# print(d_mid)
+d_mid = deflections(x, BMD, I, E)
+print(d_mid)
