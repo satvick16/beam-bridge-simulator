@@ -58,10 +58,9 @@ TauU = 4
 TauG = 2
 mu = 0.2
 
-# applies a point load at location xP and returns the SFD and BMD associated with it
-
 
 def apply_pl(xP, P, x, SFD):
+    '''applies a point load at location xP and returns the SFD and BMD associated with it'''
     # calculating reaction forces
     sup_2_p = (xP - support_1_x)*P / (support_2_x - support_1_x)
     sup_1_p = P - sup_2_p
@@ -77,6 +76,7 @@ def apply_pl(xP, P, x, SFD):
 
 
 def calc_section_properties(bft, tft, hw, tw, bfb, tfb, a):
+    '''calculates cross-section properties: centroidal axis, second moment of area and first moment of area'''
     # calculating y bar
     # top flange area + bottom flange area + web areas
     total_area = bft * tft + bfb * tfb + 2 * hw * tw
@@ -104,10 +104,12 @@ def calc_section_properties(bft, tft, hw, tw, bfb, tfb, a):
 
 
 def v_fail(I, Q, b, tau):
-    return tau*I*b / Q  # shear force that would cause bridge to fail in shear
+    '''calculates shear force that would cause bridge to fail in shear'''
+    return tau*I*b / Q
 
 
 def V_fail_buckling(I, Q, tw, hw, E, mu, a):
+    '''computes the force needed to cause the bridge to fail via shear buckling'''
     dist_to_diaphragm = np.ones(len(a))
 
     start_point = 0
@@ -128,6 +130,7 @@ def V_fail_buckling(I, Q, tw, hw, E, mu, a):
 
 
 def glue_V_fail_buckling(I, tw, hw):
+    '''computes force needed to make bridge fail via glue failure'''
     glue_tab_width = 10
 
     Q_glue = bft*tft*((hw+tft+tfb)-(tw/2)-y_bar)
@@ -268,6 +271,7 @@ def fail_load_2(P, SFD_PL, BMD, V_Mat, V_Buck, M_MatT, M_MatC, M_Buck1, M_Buck2,
 
 
 def plot_sfd_bmd(SFD, BMD):
+    '''plots the shear force and bending moment diagram'''
     plt.subplot(2, 1, 1)
     plt.plot(x, SFD_PL)
     plt.xlabel("length of bridge (mm)")
@@ -336,24 +340,7 @@ def plot_glue_V_fail_buckling(SFD_PL, I, tw, hw, ax):
     ax.set_title("glue shear buckling", fontsize=10)
 
 
-# def plot_max_forces(max_force_shear, max_force_moment):
-#     plt.plot(x, max_force_shear, label="Failure force in shear")
-#     plt.plot(x, max_force_moment, label="Failure force due to moment")
-#     plt.ylabel("Force (N)")
-#     plt.xlabel("Position (mm)")
-#     plt.legend()
-#     plt.ylim(-100000, 100000)
-
-#     # plt.plot(x, BMD)
-#     # plt.plot(x, SFD_PL)
-
-#     plt.gca().invert_yaxis()
-#     plt.show()
-
-
 def plot_moment_failure(mt, mc, c1, c2, c3, BMD, ax):
-    # plt.plot(x, mt, label="Max moment in tension")
-    # plt.plot(x, mc, label="Max moment in compression")
     ax.plot(x, c1, label="flange buckling Case 1")
     ax.plot(x, c2, label="flange tip buckling Case 2")
     ax.plot(x, c3, label="web buckling Case 3")
@@ -366,6 +353,7 @@ def plot_moment_failure(mt, mc, c1, c2, c3, BMD, ax):
 
 
 def train_loading_case_end(SFD_PL):
+    '''applies a load simulating a 400N train at one end'''
     train_load = 400/6
 
     SFD_PL, BMD = apply_pl(409, train_load, x, SFD_PL)
@@ -379,6 +367,7 @@ def train_loading_case_end(SFD_PL):
 
 
 def train_loading_case_mid(SFD_PL):
+    '''applies a load simulating a 400N train at midspan'''
     train_load = 400/6
 
     SFD_PL, BMD = apply_pl(117, train_load, x, SFD_PL)
@@ -392,6 +381,7 @@ def train_loading_case_mid(SFD_PL):
 
 
 def get_area_used():
+    '''computes the area of matboard needed to build the bridge'''
     sum = 2*hw*(tw/1.27) + bfb*(tfb/1.27) + bft*(tft/1.27) + np.full(L, 20)
     diaphram_area = 0
     for i in range(len(a)):
@@ -400,10 +390,8 @@ def get_area_used():
     return int(np.cumsum(sum)[-1]) + diaphram_area
 
 
-print(get_area_used())
-
-
 def deflections(x, BMD, I, E):
+    '''computes midspan deflection of bridge (mm)'''
     curvature = BMD / E / I
 
     integrand1 = (L - x) * curvature
@@ -413,6 +401,8 @@ def deflections(x, BMD, I, E):
 
     return delta
 
+
+print(get_area_used())
 
 point_load = 200
 SFD_PL, BMD = apply_pl(565, point_load, x, SFD_PL)
@@ -434,8 +424,7 @@ max_force_shear, max_force_moment = fail_load(
 
 glue = glue_V_fail_buckling(I, tw, hw)
 
-# plot_sfd_bmd(SFD_PL, BMD)
-# plot_max_forces(max_force_shear, max_force_moment)
+plot_sfd_bmd(SFD_PL, BMD)
 
 fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(2, 3)
 
