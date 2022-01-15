@@ -2,6 +2,8 @@
 
 This program helped us simulate and optimize our design for a beam bridge made out of matboard for the course "CIV102 - Structures and Materials". It uses NumPy and Matplotlib to compute relevant quantities related to bridge failure and performance.
 
+For full assignment description, see "Matboard-Bridge-Project.pdf".
+
 ## Sample outputs
 
 ![alt text](https://github.com/satvick16/beam-bridge-simulator/blob/master/images/shear-moment-diagrams.png?raw=true)
